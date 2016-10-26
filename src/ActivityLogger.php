@@ -17,6 +17,9 @@ class ActivityLogger
     /** @var \Illuminate\Auth\AuthManager */
     protected $auth;
 
+    /** @var \Illuminate\Contracts\Config\Repository  */
+    protected $config;
+
     protected $logName = '';
 
     /** @var bool */
@@ -34,6 +37,8 @@ class ActivityLogger
     public function __construct(AuthManager $auth, Repository $config)
     {
         $this->auth = $auth;
+
+        $this->config = $config;
 
         $this->properties = collect();
 
@@ -161,8 +166,14 @@ class ActivityLogger
             return $modelOrId;
         }
 
-        if ($model = $this->auth->getProvider()->retrieveById($modelOrId)) {
-            return $model;
+        if($this->config['laravel-activitylog']['use_jwt_token']) {
+            if($model = JWTAuth::parseToken()->authenticate()) {
+                return $model;
+            }
+        } else {
+            if ($model = $this->auth->getProvider()->retrieveById($modelOrId)) {
+                return $model;
+            }
         }
 
         throw CouldNotLogActivity::couldNotDetermineUser($modelOrId);

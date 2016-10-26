@@ -26,6 +26,13 @@ return [
     'default_auth_driver' => null,
 
     /*
+     * Will use the tymondesigns/jwt-auth
+     * token to extract user model.
+     * NOTE: requires JWTAuth facade within the aliases section of app.php
+     */
+    'use_jwt_token' => false,
+
+    /*
      * If set to true, the subject returns soft deleted models.
      */
      'subject_returns_soft_deleted_models' => false,
