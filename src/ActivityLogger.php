@@ -22,6 +22,14 @@ class ActivityLogger
 
     protected $logName = '';
 
+    protected $requestId = '';
+
+    protected $severity = '';
+
+    protected $sourceType = '';
+
+    protected $sourceName = '';
+
     /** @var bool */
     protected $logEnabled;
 
@@ -47,6 +55,14 @@ class ActivityLogger
         $this->causedBy = $auth->guard($authDriver)->user();
 
         $this->logName = $config['laravel-activitylog']['default_log_name'];
+
+        $this->requestId = $config['laravel-activitylog']['default_request_id'];
+
+        $this->severity = $config['laravel-activitylog']['default_severity'];
+
+        $this->sourceType = $config['laravel-activitylog']['default_source_type'];
+
+        $this->sourceName = $config['laravel-activitylog']['default_source_name'];
 
         $this->logEnabled = $config['laravel-activitylog']['enabled'] ?? true;
     }
@@ -107,6 +123,28 @@ class ActivityLogger
         return $this;
     }
 
+    public function requestId(string $requestId)
+    {
+        $this->requestId = $requestId;
+
+        return $this;
+    }
+
+    public function severity(string $severity)
+    {
+        $this->severity = $severity;
+
+        return $this;
+    }
+
+    public function source(string $sourceType, string $sourceName)
+    {
+        $this->sourceType = $sourceType;
+        $this->sourceName = $sourceName;
+
+        return $this;
+    }
+
     public function useLog(string $logName)
     {
         $this->logName = $logName;
@@ -147,6 +185,13 @@ class ActivityLogger
         $activity->description = $this->replacePlaceholders($description, $activity);
 
         $activity->log_name = $this->logName;
+
+        $activity->request_id = $this->requestId;
+
+        $activity->severity = $this->severity;
+
+        $activity->source_type = $this->sourceType;
+        $activity->source_name = $this->sourceName;
 
         $activity->save();
 

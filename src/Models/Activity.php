@@ -10,6 +10,7 @@ use Illuminate\Support\Collection;
 
 class Activity extends Eloquent
 {
+    public $timestamps = false;
     protected $table = 'activity_log';
 
     public $guarded = [];
@@ -17,6 +18,15 @@ class Activity extends Eloquent
     protected $casts = [
         'properties' => 'collection',
     ];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->created_at = $model->freshTimestamp();
+        });
+    }
 
     public function subject(): MorphTo
     {

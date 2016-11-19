@@ -20,6 +20,28 @@ return [
     'default_log_name' => 'default',
 
     /*
+     * Used to identify a single request through multiple logs.
+     */
+    'default_request_id' => null,
+
+    /*
+     * Severity of the activity log. One of:
+     * debug, info, notice, warning, error, critical, alert, emergency
+     * https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md
+     */
+    'default_severity' => 'info',
+
+    /*
+     * Source type is usually one of: controller, model, middleware, etc.
+     */
+    'default_source_type' => null,
+
+    /*
+     * Name of the above file. Eg: AuthController
+     */
+    'default_source_name' => null,
+
+    /*
      * You can specify an auth driver here that gets user models.
      * If this is null we'll use the default Laravel auth driver.
      */
