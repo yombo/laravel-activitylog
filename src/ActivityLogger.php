@@ -24,6 +24,8 @@ class ActivityLogger
 
     protected $requestId = '';
 
+    protected $ipAddress = '';
+
     protected $severity = '';
 
     protected $sourceType = '';
@@ -65,6 +67,13 @@ class ActivityLogger
         $this->sourceName = $config['laravel-activitylog']['default_source_name'];
 
         $this->logEnabled = $config['laravel-activitylog']['enabled'] ?? true;
+        
+        $ipAddress = $_SERVER['REMOTE_ADDR'];
+        if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)) {
+            $ip_info = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $ipAddress = array_pop($ip_info);
+        }
+        $this->ipAddress = $ipAddress;
     }
 
     public function performedOn(Model $model)
@@ -130,6 +139,13 @@ class ActivityLogger
         return $this;
     }
 
+    public function ipAddress(string $ipAddress)
+    {
+        $this->ipAddress = $ipAddress;
+
+        return $this;
+    }
+
     public function severity(string $severity)
     {
         $this->severity = $severity;
@@ -187,6 +203,8 @@ class ActivityLogger
         $activity->log_name = $this->logName;
 
         $activity->request_id = $this->requestId;
+
+        $activity->ip_address = $this->ipAddress;
 
         $activity->severity = $this->severity;
 
