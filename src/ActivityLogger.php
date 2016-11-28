@@ -31,6 +31,8 @@ class ActivityLogger
 
     protected $sourceName = '';
 
+    protected $subjectId = null;
+
     /** @var bool */
     protected $logEnabled;
 
@@ -160,6 +162,13 @@ class ActivityLogger
         return $this;
     }
 
+    public function subjectId($subjectId)
+    {
+        $this->subjectId = $subjectId;
+
+        return $this;
+    }
+
     public function useLog(string $logName)
     {
         $this->logName = $logName;
@@ -207,6 +216,8 @@ class ActivityLogger
 
         $activity->source_type = $this->sourceType;
         $activity->source_name = $this->sourceName;
+
+        if ($this->subjectId) $activity->subject_id = $this->subjectId;
 
         $activity->save();
 
