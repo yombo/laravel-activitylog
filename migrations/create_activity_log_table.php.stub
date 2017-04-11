@@ -12,9 +12,8 @@ class CreateActivityLogTable extends Migration
     {
         Schema::create('activity_log', function (Blueprint $table) {
             $table->increments('id');
-            $table->increments('id');
-            $table->string('ip_address')->nullable();
             $table->string('log_name')->nullable();
+            $table->string('ip_address')->nullable();
             $table->string('request_id')->nullable();
             $table->string('severity')->nullable();
             $table->string('source_type')->nullable();
@@ -25,6 +24,7 @@ class CreateActivityLogTable extends Migration
             $table->integer('causer_id')->nullable();
             $table->string('causer_type')->nullable();
             $table->text('properties')->nullable();
+            $table->index(['causer_id', 'causer_type']);
             $table->datetime('created_at');
         });
     }

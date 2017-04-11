@@ -33,6 +33,12 @@ class ActivityLogger
 
     protected $subjectId = null;
 
+    protected $subjectType = null;
+
+    protected $causerId = null;
+
+    protected $causerType = null;
+
     /** @var bool */
     protected $logEnabled;
 
@@ -169,6 +175,27 @@ class ActivityLogger
         return $this;
     }
 
+    public function subjectType($subjectType)
+    {
+        $this->subjectType = $subjectType;
+
+        return $this;
+    }
+
+    public function causerId($causerId)
+    {
+        $this->causerId = $causerId;
+
+        return $this;
+    }
+
+    public function causerType($causerType)
+    {
+        $this->causerType = $causerType;
+
+        return $this;
+    }
+
     public function useLog(string $logName)
     {
         $this->logName = $logName;
@@ -218,6 +245,9 @@ class ActivityLogger
         $activity->source_name = $this->sourceName;
 
         if ($this->subjectId) $activity->subject_id = $this->subjectId;
+        if ($this->subjectType) $activity->subject_type = $this->subjectType;
+        if ($this->subjectId) $activity->subject_id = $this->subjectId;
+        if ($this->causerType) $activity->causer_type = $this->causerType;
 
         $activity->save();
 
