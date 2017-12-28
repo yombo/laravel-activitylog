@@ -2,16 +2,18 @@
 
 namespace Spatie\Activitylog\Traits;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 use Spatie\Activitylog\ActivityLogger;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\ActivitylogServiceProvider;
-use Spatie\Activitylog\Models\Activity;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 trait LogsActivity
 {
     use DetectsChanges;
+
+    protected $enableLoggingModelsEvents = true;
 
     protected static function bootLogsActivity()
     {
@@ -38,6 +40,20 @@ trait LogsActivity
         });
     }
 
+    public function disableLogging()
+    {
+        $this->enableLoggingModelsEvents = false;
+
+        return $this;
+    }
+
+    public function enableLogging()
+    {
+        $this->enableLoggingModelsEvents = true;
+
+        return $this;
+    }
+
     public function activity(): MorphMany
     {
         return $this->morphMany(ActivitylogServiceProvider::determineActivityModel(), 'subject');
@@ -50,7 +66,7 @@ trait LogsActivity
 
     public function getLogNameToUse(string $eventName = ''): string
     {
-        return config('laravel-activitylog.default_log_name');
+        return config('activitylog.default_log_name');
     }
 
     /*
@@ -68,7 +84,7 @@ trait LogsActivity
             'deleted',
         ]);
 
-        if (collect(class_uses(__CLASS__))->contains(\Illuminate\Database\Eloquent\SoftDeletes::class)) {
+        if (collect(class_uses_recursive(__CLASS__))->contains(SoftDeletes::class)) {
             $events->push('restored');
         }
 
@@ -86,6 +102,10 @@ trait LogsActivity
 
     protected function shouldLogEvent(string $eventName): bool
     {
+        if (! $this->enableLoggingModelsEvents) {
+            return false;
+        }
+
         if (! in_array($eventName, ['created', 'updated'])) {
             return true;
         }

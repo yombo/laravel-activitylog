@@ -2,16 +2,15 @@
 
 namespace Spatie\Activitylog\Models;
 
-use Eloquent;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-class Activity extends Eloquent
+class Activity extends Model
 {
-    public $timestamps = false;
     protected $table = 'activity_log';
+    public $timestamps = false;
 
     public $guarded = [];
 
@@ -30,7 +29,7 @@ class Activity extends Eloquent
 
     public function subject(): MorphTo
     {
-        if (config('laravel-activitylog.subject_returns_soft_deleted_models')) {
+        if (config('activitylog.subject_returns_soft_deleted_models')) {
             return $this->morphTo()->withTrashed();
         }
 
@@ -54,8 +53,12 @@ class Activity extends Eloquent
         return array_get($this->properties->toArray(), $propertyName);
     }
 
-    public function getChangesAttribute(): Collection
+    public function changes(): Collection
     {
+        if (! $this->properties instanceof Collection) {
+            return new Collection();
+        }
+
         return collect(array_filter($this->properties->toArray(), function ($key) {
             return in_array($key, ['attributes', 'old']);
         }, ARRAY_FILTER_USE_KEY));
@@ -81,7 +84,7 @@ class Activity extends Eloquent
     public function scopeCausedBy(Builder $query, Model $causer): Builder
     {
         return $query
-            ->where('causer_type', get_class($causer))
+            ->where('causer_type', $causer->getMorphClass())
             ->where('causer_id', $causer->getKey());
     }
 
@@ -96,7 +99,7 @@ class Activity extends Eloquent
     public function scopeForSubject(Builder $query, Model $subject): Builder
     {
         return $query
-            ->where('subject_type', get_class($subject))
+            ->where('subject_type', $subject->getMorphClass())
             ->where('subject_id', $subject->getKey());
     }
 }

@@ -3,11 +3,11 @@
 namespace Spatie\Activitylog;
 
 use Illuminate\Auth\AuthManager;
-use Illuminate\Contracts\Config\Repository;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Traits\Macroable;
-use Spatie\Activitylog\Exceptions\CouldNotLogActivity;
 use Spatie\Activitylog\Models\Activity;
+use Illuminate\Support\Traits\Macroable;
+use Illuminate\Contracts\Config\Repository;
+use Spatie\Activitylog\Exceptions\CouldNotLogActivity;
 
 class ActivityLogger
 {
@@ -17,7 +17,7 @@ class ActivityLogger
     protected $auth;
 
     /** @var \Illuminate\Contracts\Config\Repository  */
-    protected $config;
+//    protected $config;
 
     protected $logName = '';
 
@@ -42,10 +42,8 @@ class ActivityLogger
     /** @var bool */
     protected $logEnabled;
 
-    /** @var \Illuminate\Database\Eloquent\Model */
     protected $performedOn;
 
-    /** @var \Illuminate\Database\Eloquent\Model */
     protected $causedBy;
 
     /** @var \Illuminate\Support\Collection */
@@ -59,21 +57,21 @@ class ActivityLogger
 
         $this->properties = collect();
 
-        $authDriver = $config['laravel-activitylog']['default_auth_driver'] ?? $auth->getDefaultDriver();
+        $this->authDriver = $config['activitylog']['default_auth_driver'] ?? $auth->getDefaultDriver();
 
-        $this->causedBy = $auth->guard($authDriver)->user();
+        $this->causedBy = $auth->guard($this->authDriver)->user();
 
-        $this->logName = $config['laravel-activitylog']['default_log_name'];
+        $this->logName = $config['activitylog']['default_log_name'];
 
-        $this->requestId = $config['laravel-activitylog']['default_request_id'];
+        $this->requestId = $config['activitylog']['default_request_id'];
 
-        $this->severity = $config['laravel-activitylog']['default_severity'];
+        $this->severity = $config['activitylog']['default_severity'];
 
-        $this->sourceType = $config['laravel-activitylog']['default_source_type'];
+        $this->sourceType = $config['activitylog']['default_source_type'];
 
-        $this->sourceName = $config['laravel-activitylog']['default_source_name'];
+        $this->sourceName = $config['activitylog']['default_source_name'];
 
-        $this->logEnabled = $config['laravel-activitylog']['enabled'] ?? true;
+        $this->logEnabled = $config['activitylog']['enabled'] ?? true;
         
         $ipAddress = $_SERVER['REMOTE_ADDR'];
         if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)) {
@@ -267,14 +265,14 @@ class ActivityLogger
             return $modelOrId;
         }
 
-        if($this->config['laravel-activitylog']['use_jwt_token']) {
-            if($model = JWTAuth::parseToken()->authenticate()) {
-                return $model;
-            }
+        if($this->config['activitylog']['use_jwt_token']) {
+            $model = JWTAuth::parseToken()->authenticate();
         } else {
-            if ($model = $this->auth->getProvider()->retrieveById($modelOrId)) {
-                return $model;
-            }
+            $model = $this->auth->guard($this->authDriver)->getProvider()->retrieveById($modelOrId);
+        }
+
+        if ($model) {
+            return $model;
         }
 
         throw CouldNotLogActivity::couldNotDetermineUser($modelOrId);
@@ -295,9 +293,14 @@ class ActivityLogger
 
             $attributeValue = $activity->$attribute;
 
+            if (is_null($attributeValue)) {
+                return $match;
+            }
+
             $attributeValue = $attributeValue->toArray();
 
             return array_get($attributeValue, $propertyName, $match);
         }, $description);
     }
 }
+
